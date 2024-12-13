@@ -1,0 +1,187 @@
+package fr.fms;
+
+import java.util.Optional;
+import java.util.Scanner;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+import fr.fms.dao.ArticleRepository;
+import fr.fms.dao.CategoryRepository;
+import fr.fms.entities.Article;
+import fr.fms.entities.Category;
+
+@SpringBootApplication
+public class SpringShopJpaApplication implements CommandLineRunner {
+
+	@Autowired
+	private CategoryRepository categoryRepository;
+
+	@Autowired
+	private ArticleRepository articleRepository;
+
+	private Scanner scanner;
+	private Integer userMenuChoice;
+
+	public static void main(String[] args) {
+		SpringApplication.run(SpringShopJpaApplication.class, args);
+	}
+
+	@Override
+	public void run(String... args) throws Exception {
+
+		scanner = new Scanner(System.in);
+
+		displayPrincipalMenu();
+
+	}
+
+	public void deleteArticle() {
+		System.out.println("Saissisez l'article à supprimer : ");
+
+		Long articleId = scanner.nextLong();
+		scanner.nextLine();
+
+		articleRepository.deleteById(articleId);
+
+		if (!articleRepository.existsById(articleId)) {
+			System.out.println("L'article à bien ete supprimé !");
+		}
+
+		handleGoBackOrExit();
+	}
+
+	public void readArticle() {
+		System.out.println("**********************************************");
+		System.out.println("Saissisez l'article à afficher : ");
+
+		Long articleId = scanner.nextLong();
+		scanner.nextLine();
+
+		Optional<Article> OptionalArticle = articleRepository.findById(articleId);
+
+		if (OptionalArticle.isPresent()) {
+			Article article = OptionalArticle.get();
+
+			System.out.println(article);
+		} else {
+			System.out.println("Cette article n'est pas disponible !");
+		}
+
+		handleGoBackOrExit();
+
+	}
+
+	public void createArticle() {
+
+		System.out.println("**********************************************");
+		System.out.println("PAGE DE CREATION D'ARTICLE");
+
+		System.out.print("Entrez le nom de l'article : ");
+		String articleBrand = scanner.nextLine();
+		System.out.print("Entrez la description de l'article : ");
+		String articleDescription = scanner.nextLine();
+		System.out.print("Entrez le prix de l'article : ");
+		Double articlePrice = scanner.nextDouble();
+
+		System.out.println("Choissisez une categorie en saissisant son numero :");
+
+		for (Category cat : categoryRepository.findAll()) {
+			System.out.println(String.format("%d : %s", cat.getId(), cat.getName()));
+		}
+
+		Long choicedCatID = scanner.nextLong();
+
+		Optional<Category> optionalCat = categoryRepository.findById(choicedCatID);
+
+		if (optionalCat.isPresent()) {
+			Category choicedCategory = optionalCat.get();
+
+			try {
+				articleRepository.save(new Article(articleBrand, articleDescription, articlePrice, choicedCategory));
+				System.out.println("Article created with success !");
+
+			} catch (Exception e) {
+				System.out.println("Error creating an article : " + e.getMessage());
+			}
+
+		} else {
+			System.out.println("Category inexistante !");
+		}
+
+		handleGoBackOrExit();
+
+	}
+
+	public void handleGoBackOrExit() {
+		System.out.println("Revenir en Arriere : 'B' | Quitter : 'Q'");
+		String goBack = scanner.nextLine();
+
+		if (goBack.equalsIgnoreCase("B")) {
+			displayPrincipalMenu();
+		} else if (goBack.equalsIgnoreCase("Q")) {
+			System.out.println("Bye Bye");
+			System.exit(0);
+		}
+	}
+
+	public void displayWithPagination() {
+
+	}
+
+	public void displayWithoutPagination() {
+		System.out.println("Liste d'Articles disponibles");
+		for (Article article : articleRepository.findAll()) {
+			System.out.println(article);
+		}
+
+		handleGoBackOrExit();
+	}
+
+	public void displayPrincipalMenu() {
+		System.out.println("Bienvenue dans notre application de gestion d'articles");
+		System.out.println("1 : Afficher tout les articles sans pagination");
+		System.out.println("2 : Afficher tout les articles avec pagination");
+		System.out.println("***********************************************************");
+		System.out.println("3 : Ajouter un article");
+		System.out.println("4 : Afficher un article");
+		System.out.println("5 : Supprimer un article");
+		System.out.println("6 : Modifier un article");
+		System.out.println("***********************************************************");
+		System.out.println("7 : Ajouter un article");
+		System.out.println("8 : Afficher un article");
+		System.out.println("9 : Supprimer un article");
+		System.out.println("10 : Modifier un article");
+		System.out.println("11 : Afficher tout les articles d'une categorie");
+		System.out.println("***********************************************************");
+		System.out.println("12 : Sortir du programme");
+
+		userMenuChoice = scanner.nextInt();
+		scanner.nextLine();
+
+		while (userMenuChoice != 12) {
+
+			switch (userMenuChoice) {
+			case 1:
+				displayWithoutPagination();
+				break;
+			case 2:
+				displayWithPagination();
+				break;
+			case 3:
+				createArticle();
+				break;
+			case 4:
+				readArticle();
+				break;
+			case 5:
+				deleteArticle();
+				break;
+			}
+		}
+
+	}
+
+}

@@ -1,0 +1,133 @@
+package fr.fms;
+
+import java.util.Optional;
+import java.util.Scanner;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+import fr.fms.dao.ArticleRepository;
+import fr.fms.dao.CategoryRepository;
+import fr.fms.entities.Article;
+import fr.fms.entities.Category;
+
+@SpringBootApplication
+public class SpringShopJpaApplication implements CommandLineRunner {
+
+	@Autowired
+	private CategoryRepository categoryRepository;
+
+	@Autowired
+	private ArticleRepository articleRepository;
+
+	private Scanner scanner;
+	private Integer userMenuChoice;
+	private boolean running;
+
+	public static void main(String[] args) {
+		SpringApplication.run(SpringShopJpaApplication.class, args);
+	}
+
+	@Override
+	public void run(String... args) throws Exception {
+
+		scanner = new Scanner(System.in);
+
+		running = true;
+
+		displayPrincipalMenu();
+
+	}
+
+	public void displayWithoutPaginationMenu() {
+		System.out.println("Liste d'Articles disponibles");
+		for (Article article : articleRepository.findAll()) {
+			System.out.println(article);
+		}
+		System.out.println("3 : Ajouter article | 4 : Afficher article | 5 : Supprimer article | 6 : Modifier article");
+		userMenuChoice = scanner.nextInt();
+		scanner.nextLine();
+
+		switch (userMenuChoice) {
+		case 3:
+			createArticle();
+			break;
+		case 4:
+			System.out.println("input 4");
+			break;
+		}
+	}
+
+	public void createArticle() {
+
+		System.out.println("**********************************************");
+		System.out.println("PAGE DE CREATION D'ARTICLE");
+
+		System.out.print("Entrez le nom de l'article : ");
+		String articleBrand = scanner.nextLine();
+		System.out.print("Entrez la description de l'article : ");
+		String articleDescription = scanner.nextLine();
+		System.out.print("Entrez le prix de l'article : ");
+		Double articlePrice = scanner.nextDouble();
+
+		System.out.println("Choissisez une categorie en saissisant son numero :");
+
+		for (Category cat : categoryRepository.findAll()) {
+			System.out.println(String.format("%d : %s", cat.getId(), cat.getName()));
+		}
+
+		Long choicedCatID = scanner.nextLong();
+
+		Optional<Category> optionalCat = categoryRepository.findById(choicedCatID);
+
+		if (optionalCat.isPresent()) {
+			Category choicedCategory = optionalCat.get();
+
+			try {
+				articleRepository.save(new Article(articleBrand, articleDescription, articlePrice, choicedCategory));
+				System.out.println("Article created with success !");
+
+			} catch (Exception e) {
+				System.out.println("Error creating an article : " + e.getMessage());
+			}
+
+		} else {
+			System.out.println("Category inexistante !");
+		}
+
+		System.out.println("Souhaitez-vous revenir au menu principal ? 'O/N'");
+		scanner.nextLine();
+
+		String userChoice = scanner.nextLine();
+
+		if (userChoice.equalsIgnoreCase("O")) {
+			displayPrincipalMenu();
+		} else {
+			System.out.println("Bye Bye");
+			System.exit(0);
+		}
+
+	}
+
+	public void displayPrincipalMenu() {
+		System.out.println("Bienvenue dans notre application de gestion d'articles");
+		System.out.println("1 : Afficher tout les articles sans pagination");
+		System.out.println("2 : Afficher tout les articles avec pagination");
+		System.out.println("***********************************************************");
+
+		userMenuChoice = scanner.nextInt();
+
+		while (running) {
+			if (userMenuChoice == 1) {
+				displayWithoutPaginationMenu();
+
+			} else if (userMenuChoice == 2) {
+				displayWithPaginationMenu();
+				
+			}
+		}
+	}
+
+}

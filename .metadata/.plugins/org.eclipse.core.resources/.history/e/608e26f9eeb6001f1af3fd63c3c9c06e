@@ -1,0 +1,32 @@
+package fr.fms;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+import fr.fms.dao.ArticleRepository;
+import fr.fms.dao.CategoryRepository;
+import fr.fms.entities.Article;
+
+@SpringBootApplication
+public class exo1_3 implements CommandLineRunner{
+
+
+	@Autowired
+	private CategoryRepository categoryRepository;
+	
+	@Autowired
+	private ArticleRepository articleRepository;
+	
+	public static void main(String[] args) {
+		SpringApplication.run(SpringShopJpaApplication.class, args);
+	}
+	
+	@Override
+	public void run(String... args) throws Exception {
+//		for (Article article : articleRepository.searchArticlesByDescriptionAndBrand("Samsung", "S10")) {
+//			System.out.println(article);
+//		}
+	}
+}

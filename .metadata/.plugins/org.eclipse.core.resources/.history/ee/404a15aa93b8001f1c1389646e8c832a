@@ -1,0 +1,371 @@
+package fr.fms;
+
+import java.util.List;
+import java.util.Scanner;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+import fr.fms.business.IShopJPAImpl;
+import fr.fms.dao.ArticleRepository;
+import fr.fms.dao.CategoryRepository;
+import fr.fms.entities.Article;
+import fr.fms.entities.Category;
+
+@SpringBootApplication
+public class SpringShopJpaApplication implements CommandLineRunner {
+
+	@Autowired
+	private CategoryRepository categoryRepository;
+
+	@Autowired
+	private ArticleRepository articleRepository;
+
+	@Autowired
+	private IShopJPAImpl job;
+
+	private Scanner scanner;
+	private Integer userMenuChoice;
+
+	public static void main(String[] args) {
+		SpringApplication.run(SpringShopJpaApplication.class, args);
+	}
+
+	@Override
+	public void run(String... args) throws Exception {
+
+		scanner = new Scanner(System.in);
+		userMenuChoice = 0;
+		displayPrincipalMenu();
+
+	}
+
+	public void displayArticlesByCategory() {
+		System.out.println("Saissisez le nom de la categorie : ");
+		String categoryName = scanner.nextLine();
+
+		for (Article article : job.getArticlesByCategoryName(categoryName)) {
+			System.out.println(article);
+		}
+
+		handleGoBackOrExit();
+	}
+
+	public void handleModifyCategory() {
+		System.out.println("**********************************************");
+		System.out.println("PAGE DE MODIFICATION DE CATEGORIE");
+
+		System.out.println("Saissisez l'id de la categorie à modifier : ");
+
+		Long categoryId = scanner.nextLong();
+		scanner.nextLine();
+
+		Category category = job.getCategory(categoryId);
+
+		if (category != null) {
+			System.out.println("Entrez le nouveau nom : ");
+			String newCategoryName = scanner.nextLine();
+
+			if (job.updateCategory(category.getId(), newCategoryName)) {
+				System.out.println("Categorie modifié.");
+			}
+
+		} else {
+			System.out.println("Cette categorie n'hexiste pas.");
+		}
+
+		handleGoBackOrExit();
+	}
+
+	public void handleDeleteCategory() {
+		System.out.println("Saissisez la categorie à supprimer : ");
+
+		Long categorieId = scanner.nextLong();
+		scanner.nextLine();
+
+		if (job.deleteCategory(categorieId)) {
+
+			System.out.println("La categorie à bien ete supprimé !");
+		} else {
+			System.out.println("Cette categorie n'hexiste pas.");
+		}
+
+		handleGoBackOrExit();
+	}
+
+	public void handleReadCategory() {
+		System.out.println("**********************************************");
+		System.out.println("Saissisez l'id de la categorie à afficher : ");
+
+		Long categorieId = scanner.nextLong();
+		scanner.nextLine();
+
+		Category choicedCategory = job.getCategory(categorieId);
+
+		if (choicedCategory != null) {
+			System.out.println(choicedCategory);
+		} else {
+			System.out.println("Cette Categorie n'hexiste pas.");
+		}
+
+		handleGoBackOrExit();
+	}
+
+	public void handleCreateCategory() {
+		System.out.println("**********************************************");
+		System.out.println("PAGE DE CREATION DE CATEGORIE");
+
+		System.out.print("Entrez le nom de la catgorie : ");
+		String categoryName = scanner.nextLine();
+
+		boolean categoryCreated = job.createCategory(categoryName);
+
+		if (categoryCreated) {
+			System.out.println("Categorie ajouté avec success !");
+		} else {
+			System.out.println("Cette categorie exist deja ");
+		}
+
+		handleGoBackOrExit();
+
+	}
+
+	public void handleModifyArticle() {
+		System.out.println("**********************************************");
+		System.out.println("PAGE DE MODIFICATION D'ARTICLE");
+
+		System.out.println("Saissisez l'id de l'article à modifier : ");
+
+		Long articleId = scanner.nextLong();
+		scanner.nextLine();
+
+		Article article = job.readArticle(articleId);
+
+		if (article != null) {
+
+			System.out.print("Modifier la 'brand' de l'article : ");
+			String articleBrand = scanner.nextLine();
+			System.out.print("Modifier la 'description' de l'article : ");
+			String articleDescription = scanner.nextLine();
+			System.out.print("Modifier le 'price' de l'article : ");
+			Double articlePrice = scanner.nextDouble();
+
+			System.out.println("Modifier la categorie en saissisant son numero :");
+
+			for (Category cat : job.displayAllCategorys()) {
+				System.out.println(String.format("%d : %s", cat.getId(), cat.getName()));
+			}
+
+			Long choicedCatID = scanner.nextLong();
+			scanner.nextLine();
+
+			Category choicedCategory = job.getCategory(choicedCatID);
+
+			if (choicedCategory != null) {
+
+				boolean updated = job.updateArticle(articleId, articleBrand, articleDescription, articlePrice,
+						choicedCategory);
+				if (updated) {
+
+					System.out.println("L'article à bien ete modifie !");
+
+				} else {
+					System.out.println("Erreur en modifiant l'article ");
+				}
+			}
+
+			else {
+				System.out.println("Categorie inexistante !");
+			}
+
+		} else {
+			System.out.println("Cette article est inconu");
+		}
+
+		handleGoBackOrExit();
+
+	}
+
+	public void handleDeleteArticle() {
+		System.out.println("Saissisez l'article à supprimer : ");
+
+		Long articleId = scanner.nextLong();
+		scanner.nextLine();
+
+		if (job.deleteArticle(articleId)) {
+
+			System.out.println("L'article à bien ete supprimé !");
+		} else {
+			System.out.println("Cette article n'hexiste pas.");
+		}
+
+		handleGoBackOrExit();
+	}
+
+	public void displayArticle() {
+		System.out.println("**********************************************");
+		System.out.println("Saissisez l'article à afficher : ");
+
+		Long articleId = scanner.nextLong();
+		scanner.nextLine();
+
+		Article article = job.readArticle(articleId);
+
+		if (article != null) {
+			System.out.println(article);
+		} else {
+			System.out.println("Article non disponible.");
+		}
+
+		handleGoBackOrExit();
+
+	}
+
+	public void handleCreateArticle() {
+
+		System.out.println("**********************************************");
+		System.out.println("PAGE DE CREATION D'ARTICLE");
+
+		System.out.print("Entrez le nom de l'article : ");
+		String articleBrand = scanner.nextLine();
+		System.out.print("Entrez la description de l'article : ");
+		String articleDescription = scanner.nextLine();
+		System.out.print("Entrez le prix de l'article : ");
+		Double articlePrice = scanner.nextDouble();
+
+		System.out.println("Choissisez une categorie en saissisant son numero :");
+
+		for (Category cat : job.displayAllCategorys()) {
+			System.out.println(String.format("%d : %s", cat.getId(), cat.getName()));
+		}
+
+		Long choicedCatID = scanner.nextLong();
+		scanner.nextLine();
+		Category choicedCategory = job.getCategory(choicedCatID);
+
+		if (choicedCategory != null) {
+
+			if (job.createArticle(articleBrand, articleDescription, articlePrice, choicedCategory)) {
+				System.out.println("L'article à bien ete crée.");
+			} else {
+				System.out.println("Error creating an article : ");
+			}
+
+		} else {
+			System.out.println("Category inexistante !");
+		}
+
+		handleGoBackOrExit();
+
+	}
+
+	public void handleGoBackOrExit() {
+		System.out.println("Revenir en Arriere : 'B' | Quitter : 'Q'");
+		String goBack = scanner.nextLine();
+
+		if (goBack.equalsIgnoreCase("B")) {
+			displayPrincipalMenu();
+		} else if (goBack.equalsIgnoreCase("Q")) {
+			System.out.println("Bye Bye");
+			System.exit(0);
+		}
+	}
+
+	public void displayWithPagination() {
+
+	}
+
+	public void displayWithoutPagination() {
+		System.out.println("Liste d'Articles disponibles");
+
+		List<Article> articles = job.displayAllArticles();
+
+		if (articles.isEmpty()) {
+			System.out.println("Aucun article disponible.");
+		} else {
+			for (Article article : articles) {
+				System.out.println(article);
+			}
+		}
+
+		handleGoBackOrExit();
+	}
+
+	public void displayMenu() {
+		System.out.println("Bienvenue dans notre application de gestion d'articles");
+		System.out.println("1 : Afficher tout les articles sans pagination");
+		System.out.println("2 : Afficher tout les articles avec pagination");
+		System.out.println("***********************************************************");
+		System.out.println("3 : Ajouter un article");
+		System.out.println("4 : Afficher un article");
+		System.out.println("5 : Supprimer un article");
+		System.out.println("6 : Modifier un article");
+		System.out.println("***********************************************************");
+		System.out.println("7 : Ajouter une categorie");
+		System.out.println("8 : Afficher une categorie");
+		System.out.println("9 : Supprimer une categorie");
+		System.out.println("10 : Modifier une categorie");
+		System.out.println("11 : Afficher tout les articles d'une categorie");
+		System.out.println("***********************************************************");
+		System.out.println("12 : Sortir du programme");
+	}
+
+	public void displayPrincipalMenu() {
+
+//		userMenuChoice = scanner.nextInt();
+//		scanner.nextLine();
+
+		while (userMenuChoice != 12) {
+			displayMenu();
+			System.out.print("Veuillez choisir une option: ");
+			userMenuChoice = scanner.nextInt();
+			scanner.nextLine();
+
+			switch (userMenuChoice) {
+			case 1:
+				displayWithoutPagination();
+				break;
+			case 2:
+				displayWithPagination();
+				break;
+			case 3:
+				handleCreateArticle();
+				break;
+			case 4:
+				displayArticle();
+				break;
+			case 5:
+				handleDeleteArticle();
+				break;
+			case 6:
+				handleModifyArticle();
+				break;
+			case 7:
+				handleCreateCategory();
+				break;
+			case 8:
+				handleReadCategory();
+				break;
+			case 9:
+				handleDeleteCategory();
+				break;
+			case 10:
+				handleModifyCategory();
+				break;
+			case 11:
+				displayArticlesByCategory();
+				break;
+			case 12:
+				System.out.println("by by");
+				break;
+			default:
+				System.out.println("Option invalide, veuillez reessayer.");
+				break;
+			}
+		}
+
+	}
+
+}

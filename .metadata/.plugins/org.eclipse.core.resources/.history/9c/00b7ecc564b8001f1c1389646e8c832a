@@ -1,0 +1,17 @@
+package fr.fms.business;
+
+import java.util.List;
+
+import fr.fms.entities.Article;
+import fr.fms.entities.Category;
+
+public interface IShopJPA {
+	public List<Article> displayAllArticles();
+
+	public boolean createArticle(String articleBrand, String articleDescription, Double articlePrice,
+			Category choicedCategory);
+
+	public void displayAllCategorys();
+
+	public Category getCategory(Long catId);
+}

@@ -1,0 +1,27 @@
+package fr.fms.business;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import fr.fms.dao.ArticleRepository;
+import fr.fms.dao.CategoryRepository;
+import fr.fms.entities.Article;
+
+@Service
+public class IShopJPAImpl implements IShopJPA {
+
+	@Autowired
+	private CategoryRepository categoryRepository;
+
+	@Autowired
+	private ArticleRepository articleRepository;
+
+	public List<Article> displayAllArticles() {
+
+		return articleRepository.findAll();
+
+	}
+
+}
