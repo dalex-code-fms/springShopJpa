@@ -44,6 +44,6 @@ public class Category implements Serializable {
 
 	@Override
 	public String toString() {
-		return String.format("Category : %s", name);
+		return String.format("%s", name);
 	}
 }
